@@ -12,7 +12,7 @@ export default function Discussion({title}: { title: string }) {
             category="General"
             categoryId="DIC_kwDOH42f784CREiG"
             term={title}
-            strict="0"
+            strict="1"
             reactionsEnabled="1"
             emitMetadata="0"
             inputPosition="top"
