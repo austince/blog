@@ -9,7 +9,7 @@ const config = {
   title: `austin ce's blog`,
   tagline: 'Control Planes, my dog, and other exciting topics.',
   url: 'https://austince.github.io',
-  baseUrl: '/',
+  baseUrl: '/blog/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',

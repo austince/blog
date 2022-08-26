@@ -1,0 +1,102 @@
+---
+slug: declarative-apis-pt2
+title: "Declarative APIs pt.2: References"
+authors: [austince]
+tags: [declarative, apis, kubernetes, ids, control-planes]
+---
+[Last time](./declarative-apis-pt1) we took a look at SQL,
+one of the most popular declarative APIs, and imagined what it would look like if identifiers
+were controlled by the system instead of the user,
+e.g. you must look up the identifier for a table in order to add records to it.
+
+This was inconvenient but workable within the sequential context of SQL execution.
+Now, let's use a less contrived example to see how it extends
+to control plane APIs, where forcing sequential execution makes modeling workflows complex and frankly
+just not fun.
+
+In Kubernetes, configuration is often created separately from application deployments and
+loaded by referencing the configuration's name.
+
+```yaml
+
+# app.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webserver
+spec:
+  # ...
+  template:
+    # ...
+    spec:
+      volumes:
+        - name: config-volume
+          configMap:
+            name: webserver-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: webserver-config
+data:
+  config.yaml: "..."
+```
+
+The ability to just say "pull in the config named 'webserver-config'" gets us a couple great things:
+* Can recreate the entire setup without changing the configuration, just by moving namespaces or deleting the old ones.
+* Can create or update both resources with just `kubectl apply --file app.yaml`, without having to specify any order
+
+The Kubernetes control plane takes care of resolving these references in the
+background and allows us to create all the resources for our application _asynchronously_.
+
+
+
+But let's back up and assume we aren't able to name
+the resources ourselves — how would this workflow change?
+
+First, we'd have to create our configuration and parse the name from the response.
+
+```shell
+CONFIGMAP_NAME=$(\
+  kubectl create configmap \
+    --file ./config.yaml \
+    -o json | jq -r '.metadata.name'\
+)
+```
+
+Then, we'd need to use the name of the created `ConfigMap` to reference it in our `Deployment`.
+
+```shell
+cat <<EOF | kubectl apply -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webserver
+spec:
+  replicas: 1
+  template:
+    spec:
+      volumes:
+	  - name: config-volume
+	    configMap:
+	      name: $CONFIGMAP_NAME
+EOF
+```
+
+
+This adds a lot of manual steps, and we haven't even talked about things like updates and deletions!
+
+Without the ability to set the identifiers when creating resources, users are forced to build these
+manual workflows themselves, in each language/tool they need them.
+
+Pretty soon, you've grown from a handful of shell scripts to libraries in four different languages,
+custom Github Actions, an in-house Terraform provider...
+all with their own orchestration and heavy maintenance burden.
+
+Putting as much of this orchestration into the system as
+possible helps people build less of it themselves, increasing ease of adoption.
+**Just like SQL, we want our API users to be able to think only
+about what they want the final outcome to look like, not how to get there.**
+
+Allowing users to provide identifiers for your APIs is critical for **easy,
+powerful workflows that get shit done and focus on what matters.**
