@@ -9,7 +9,7 @@ one of the most popular declarative APIs, and imagined what it would look like i
 were controlled by the system instead of the user,
 e.g. you must look up the identifier for a table in order to add records to it.
 
-This was inconvenient but workable within the sequential context of SQL execution.
+This was inconvenient, but workable within the sequential context of SQL execution.
 Now, let's use a less contrived example to see how it extends
 to control plane APIs, where forcing sequential execution makes modeling workflows complex and frankly
 just not fun.
@@ -18,7 +18,6 @@ In Kubernetes, configuration is often created separately from application deploy
 loaded by referencing the configuration's name.
 
 ```yaml
-
 # app.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -83,14 +82,13 @@ spec:
 EOF
 ```
 
-
 This adds a lot of manual steps, and we haven't even talked about things like updates and deletions!
 
 Without the ability to set the identifiers when creating resources, users are forced to build these
 manual workflows themselves, in each language/tool they need them.
 
 Pretty soon, you've grown from a handful of shell scripts to libraries in four different languages,
-custom Github Actions, an in-house Terraform provider...
+custom GitHub Actions, an in-house Terraform provider...
 all with their own orchestration and heavy maintenance burden.
 
 Putting as much of this orchestration into the system as

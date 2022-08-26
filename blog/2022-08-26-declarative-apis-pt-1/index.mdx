@@ -13,8 +13,8 @@ For control planes (and cloud service APIs, more generally),
 IDs are how you address the API objects in the system.
 In healthy systems, users are creating and interacting with objects all the time.
 
-I'm not here to argue for one technical format or another.
-Instead, I'd like to show why whatever format you pick for your control plane IDs,
+I'm not here to argue for one format or another.
+Instead, I'd like to show why, whatever format you pick for your control plane IDs,
 they should be _**provided by your users**_. Without that, the APIs can't be declarative
 and become much more difficult to adopt into workflows.
 
@@ -27,24 +27,24 @@ CREATE TABLE Puppies (
 	ID SERIAL,
 	Name TEXT,
 	Breed TEXT
-)
+);
 
 -- OK, now let's add some puppies!
--- But first, we need the Table ID.
+-- But first, we need the Table ID in order to address it.
 INSERT INTO (
-	SELECT table_id
+	SELECT tableid
 	FROM `pg_catalog.pg_tables`
 	WHERE tablename = 'Puppies'
 	)
 	(Name, Breed)
-VALUES ('Moody', 'Chihuahua Mix')
+VALUES ('Moody', 'Chihuahua Mix');
 ```
 
 This isn't valid SQL, but hope you get my point.
 Referencing objects you create becomes much more difficult when you need to query for their identifiers.
 
-To express similar API calls from a CLI (here called `api`),
-they are as inconvenient as the above SQL, but sadly more familiar.
+To express similar API calls from a CLI,
+they are just as inconvenient as the above SQL, but sadly more familiar.
 ```shell
 api create table Puppies # ...
 api insert-into \
@@ -53,8 +53,11 @@ api insert-into \
 ```
 
 If we want using our REST APIs to be as easy as submitting a declarative SQL statement,
-we must allow them to name their own identifiers.
+we must allow people to name their own identifiers.
 
-SQL's execution model is simpler than that of a control plane in that SQL executes sequentially, whereas control plane APIs are increasingly asynchronous. Missing references could mean the object just doesn't exist yet, but will in a few seconds. ***If the system doesn't account for this burden, users must.*** That's next up.
+SQL's execution model is simpler than a control plane's. SQL executes sequentially,
+whereas control plane APIs are increasingly asynchronous.
+Missing references could mean the object just doesn't exist yet, but will in a few seconds.
+***If the system doesn't account for this burden, users must.*** That's up next.
 
 [1]: https://twitter.com/gwenshap/status/1532882337658044416
