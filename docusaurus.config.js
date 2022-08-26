@@ -9,7 +9,7 @@ const config = {
   title: `austin ce's blog`,
   tagline: 'Control Planes, my dog, and other exciting topics.',
   url: 'https://austince.github.io',
-  baseUrl: '/blog/',
+  baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
@@ -33,7 +33,6 @@ const config = {
       ({
         docs: false,
         blog: {
-          routeBasePath: '/',
           showReadingTime: true,
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
