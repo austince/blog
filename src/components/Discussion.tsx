@@ -9,10 +9,12 @@ export default function Discussion({title}: { title: string }) {
             repo="austince/blog"
             repoId="R_kgDOH42f7w"
             mapping="specific"
+            category="General"
+            categoryId="DIC_kwDOH42f784CREiG"
             term={title}
-            strict="1"
-            reactions-enabled="1"
-            emit-metadata="0"
+            strict="0"
+            reactionsEnabled="1"
+            emitMetadata="0"
             inputPosition="top"
             theme={colorMode === 'dark' ? 'dark' : 'light'}
             lang="en"
