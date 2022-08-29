@@ -5,9 +5,13 @@ authors: [austince]
 tags: [declarative, apis, sql, ids, control-planes]
 ---
 
-[Gwen Shapira](https://twitter.com/gwenshap) of [The Nile](https://www.thenile.dev/) recently [shared][1] some
+[Gwen Shapira](https://twitter.com/gwenshap) of [The Nile](https://www.thenile.dev/) recently shared some
 interesting discussions on what people use for the IDs in their systems.
 Most advocate for (or against at all costs!) one format or another, citing the technical pains and trade-offs.
+
+<div className={'center'}>
+    <TweetEmbed tweetId= "1532882337658044416" />
+</div>
 
 For control planes (and cloud service APIs, more generally),
 IDs are how you address the API objects in the system.
@@ -48,18 +52,16 @@ they are just as inconvenient as the above SQL, but sadly more familiar.
 ```shell
 api create table Puppies # ...
 api insert-into \
-  --table=$(api get table-id --name=Puppies) \
+  --table=$(api get table-id --name=Puppies | jq -r '.[0].id') \
   --data='{"name": "Moody", "breed": "Chihuahua Mix"}'
 ```
 
-If we want using our REST APIs to be as easy as submitting a declarative SQL statement,
+If we want using our REST APIs to be as easy as submitting a SQL statement,
 we must allow people to name their own identifiers.
 
 SQL's execution model is simpler than a control plane's. SQL executes sequentially,
 whereas control plane APIs are increasingly asynchronous.
 Missing references could mean the object just doesn't exist yet, but will in a few seconds.
 ***If the system doesn't account for this burden, users must.*** That's up next.
-
-[1]: https://twitter.com/gwenshap/status/1532882337658044416
 
 <Discussion title="declarative-apis-pt1"/>
