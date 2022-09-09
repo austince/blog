@@ -19,6 +19,6 @@ export default function Discussion({title}: { title: string }) {
             theme={colorMode === 'dark' ? 'dark' : 'light'}
             lang="en"
             loading="lazy"
-        ></Giscus>
+        />
     )
 }
