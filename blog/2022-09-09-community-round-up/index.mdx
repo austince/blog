@@ -1,0 +1,92 @@
+---
+slug: community-roundup
+title: "Community Roundup: Kubernetes, Operators, Cilium"
+authors: [austince]
+tags: [community, kubernetes, cilium, operators]
+---
+import moodyGif from './moody-toad-square-high.gif'
+
+This week's post is a grab bag of places on the internet that I've found helpful for connecting
+with communities. There are so many tools out there, how are you supposed to use them all without breaking anything?
+I haven't figured that out yet — when I'm really stuck, or have an idea to make something better, getting in touch, joining a zoom, etc.
+with the people who make the tool has been the most effective and rewarding way to unstick.
+
+<div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      flexDirection: "column",
+      alignItems: "center",
+      margin: "16px"
+    }}>
+  <h2>Let's hop in</h2>
+  <img src={moodyGif}
+       style={{maxWidth: "50%"}}
+       alt="A GIF of my dog, Moody, jumping alongside a toad at night in my floodlight-lit gravel driveway.
+          He doesn't hurt it, but is understandably confused."/>
+</div>
+
+I've been working recently with Kubernetes, Kubernetes Operators, and Cilium. Here's where they hang out.
+
+### Kubernetes
+
+Kubernetes is massive. It's hard to know where to start.
+
+The [`kubernetes/community`](https://github.com/kubernetes/community/) repo has everything you need to understand
+who's in the community, what they do, and where they hang out. Of course, they're also on Slack at [kubernetes.slack.com](https://kubernetes.slack.com/).
+
+Sometimes even after seeming to find the right repo or special interest group (sig), filing an issue,
+asking a question on the mailing list, or joining a Slack channel, it can be hard to get a response.
+Everyone is busy and there is a lot of noise. Most of these subgroups have regular meetings on Zoom, where you can
+(respectfully!) attend and add your question/issue to the agenda.
+
+For `sig-api-machinery`, who are responsible for many of the kube-apiserver projects, they have both bug triage
+meetings that happen a couple of times a week and a bi-weekly meeting, each with an open agenda.
+
+You can find the workings of their group in that community repo, under [`sig-api-machinery` directory](https://github.com/kubernetes/community/tree/master/sig-api-machinery).
+
+#### tldr:
+* Slack: https://kubernetes.slack.com/
+* Community Repo: https://github.com/kubernetes/community/
+* Look for the owner of the repo you're interested in, and find their places and meetings in the community repo directories
+
+### Kubernetes Operators
+
+I work mostly in Go these days, especially on building [operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/)
+with [Kubebuilder](https://github.com/kubernetes-sigs/kubebuilder/) and the supporting [Controller Runtime](https://github.com/kubernetes-sigs/controller-runtime)
+family of libraries.
+They are a subproject of the `sig/api-machinery` group, but large enough to have their own meetings and
+[#kubebuilder](https://kubernetes.slack.com/archives/CAR30FCJZ) channel in Slack.
+
+This is typical of subprojects in Kubernetes,
+but can make it difficult to find the right place to ask a question.
+If all else fails, just join a random meeting, own
+your ignorance, and ask nicely 🙃.
+
+#### tldr:
+* Slack: [#kubebuilder](https://kubernetes.slack.com/archives/CAR30FCJZ)
+* Meetings: https://github.com/kubernetes/community/tree/master/sig-api-machinery#meetings
+
+### Cilium
+
+[Cilium](https://cilium.io/) is a networking and security tool for Kubernetes. It's great, but I'm not a strong networker;
+ports I can handle, IPAM, Tunnels, not so much.
+
+[Slack](https://cilium.herokuapp.com/) is a good place to start, but easy to get lost in. There are a few channels that
+have been helpful for me:
+* [#service-mesh](https://cilium.slack.com/archives/C02QKQDTVDX), mostly users and developer advocates discussing new features and use cases for service mesh.
+* [#development](https://cilium.slack.com/archives/C2B917YHE), where the people building cilium hang out. Good for low-level issues.
+
+If all else fails, or just want to learn how their sausage is made, join their weekly developer meeting on Zoom.
+
+They meet every Wednesday from 11 to 11:30am ET:
+* Zoom: https://zoom.us/j/596609673
+* Open Agenda: https://docs.google.com/document/d/1Y_4chDk4rznD6UgXPlPvn3Dc7l-ZutGajUv1eF0VDwQ/edit#
+
+#### tldr:
+* Slack: https://cilium.herokuapp.com/
+* `#development` channel for low-level issues: (https://cilium.slack.com/archives/C2B917YHE)
+* Meetings: https://docs.google.com/document/d/1Y_4chDk4rznD6UgXPlPvn3Dc7l-ZutGajUv1eF0VDwQ/edit#
+
+
+<Discussion title="2022-09-09-community-round-up"/>
