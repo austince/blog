@@ -1,0 +1,90 @@
+---
+slug: k8s-apiserver-intro
+title: "Kubernetes API Server: How's it work?"
+authors: [austince]
+tags: [kubernetes, apis, rest, rest-api, control-planes]
+draft: true
+---
+
+The Kubernetes API server is the core of its control plane and one of its key differentiators —
+it enables workflows across the ecosystem, from `kubectl logs` to Custom Resource Definitions + Operators and more.
+
+It is a RESTful-ish web server, and those have been around a long time, making it easy to glaze over it and focus
+your time on the million other things to learn about k8s.
+
+_But wait!_ The k8s API server is so much more than your average Spring Boot API server.
+As of 1.24, it ships with over 50 different APIs
+Understanding how it works and the constraints it imposes makes working on all other parts of the ecosystem easier,
+as they all touch the apiserver in one way or another.
+
+<!--truncate-->
+
+## Traditional API Servers
+
+Let's say we have a RESTful API that provides access to our users.
+
+Typically, this is centered around a few API endpoints, perhaps with a version.
+
+`GET /v1/users/` — List all users
+`GET /v1/users/:id` — Get a single user
+`PUT /v1/users/:id` — Update a single user
+`DELETE /v1/users/:id` — Delete a single user
+
+Following [the Repository Pattern](https://docs.microsoft.com/en-us/previous-versions/msp-n-p/ff649690(v=pandp.10)), we'd implement this like:
+
+(Web Server) -> Users Controller -> Users Service -> User Repository -> Database
+
+## Web Server
+The Web Server and raw HTTP request parsing is usually handled by framework's like Spring, not implemented by us, but will be helpful to keep in mind for the comparison.
+* Parses the HTTP request (path, parameters, body) and calls the appropriate methods.
+* Sends the response and handles errors.
+
+## Users Controller
+- Registers methods to handle the HTTP requests, taking the parsed body and URL parameters and delegating to the service that will actually perform the actions.
+- It also registers things like which response encodings it produces and other HTTP metadata.
+- Sometimes data validation can happen here as well.
+
+```java
+@GET
+@Path("/{id}")
+@Produces(MediaType.APPLICATION_JSON)
+public User get(@PathParam("id") UUID id) {
+  return usersService.get(id);
+}
+```
+
+## Users Service
+* A thin layer between the controllers and the data layer, used to ensure neither context gets mixed with the other. Services usually know nothing about HTTP or Databases, but translate between them.
+```java
+public User get(UUID id) {
+ return usersRepository.findById(id);
+}
+```
+## Users Repository
+* Access to the data storage system itself, like a SQL database.
+* Translates queries and their results into the object types.
+
+```java
+public User findById(UUID id) {
+try (Connection connection = dataSource.getConnection();
+  PreparedStatement statement = connection.prepareStatement("SELECT * FROM users WHERE id = ?")) {
+  statement.setObject(1, id);
+  try (ResultSet resultSet = statement.executeQuery()) {
+    if (resultSet.next()) {
+       return new User(
+             UUID.fromString(resultSet.getString("id")),
+             resultSet.getString("username"),
+    }
+    }
+  } catch (SQLException e) {
+    throw new PersistenceException(e);
+  }
+
+  return null;
+}
+```
+> https://dzone.com/articles/building-a-rest-api-with-quarkus
+
+
+
+<Discussion title="2022-09-17-kubernetes-apiserver-intro"/>
