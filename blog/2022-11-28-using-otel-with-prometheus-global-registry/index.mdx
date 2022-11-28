@@ -1,0 +1,149 @@
+---
+slug: using-otel-with-prometheus-global-registry
+title: "Using a Prometheus Global Registry with OpenTelemetry"
+authors: [austince]
+tags: [observability, otel, prometheus, kubernetes]
+---
+
+# Using OpenTelemetry with a Prometheus Global Registry
+
+OpenTelemetry (OTel) has been on my radar for a while, but learning it has been too daunting a task to start.
+I recently had the opportunity (read: no escape) when it came time to instrument our applications at
+[Immerok](https://immerok.io).
+
+<!--truncate-->
+
+## Context
+
+We use Golang for most of the stack for many reasons (holding back from a full *X* vs. Go), but an important one is
+the availability of libraries for cloud native projects, since many of them are also written in Go, e.g. Kubernetes,
+Prometheus.
+
+The two main libraries we looked at for instrumentation were Prometheus's [`client_golang`](https://github.com/prometheus/client_golang)
+and OTel's [Go implementation](https://github.com/open-telemetry/opentelemetry-go). The Prometheus lib is much more stable
+and widely used -- it's the OG -- but OTel has the "do it once" approach for all observability data, not just metrics
+as is the case with Prometheus.
+
+We build on top of Kubernetes using the Operator Pattern and the [controller-runtime library](https://github.com/kubernetes-sigs/controller-runtime).
+Unfortunately, they use a hardcoded global registry from the Prometheus `client_golang` (see [controller-runtime#210](https://github.com/kubernetes-sigs/controller-runtime/issues/210))
+... :skull: ...
+
+```go
+// https://github.com/kubernetes-sigs/controller-runtime/blob/c48baad70c539a2efb8dfe8850434ecc721c1ee1/pkg/internal/controller/metrics/metrics.go
+import (
+	"github.com/prometheus/client_golang/prometheus"
+	"sigs.k8s.io/controller-runtime/pkg/metrics"
+)
+
+// ...
+ReconcileTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
+  Name: "controller_runtime_reconcile_total",
+  Help: "Total number of reconciliations per controller",
+}, []string{"controller", "result"})
+// ...
+
+metrics.Registry.MustRegister(
+  ReconcileTotal,
+  // ...
+)
+```
+
+_Shiiit_, we're not gonna get to use the new shiny thing!
+
+But wait! OTel supports many formats for exposing metrics, and the Prometheus support is so flexible I was able to
+find a way :muscle:
+
+## Instrumenting
+
+To get data out, you create an OTel _exporter_.
+
+```go
+package promdemo
+
+import (
+	"context"
+	"log"
+
+	// Import the global metrics registry from controller-runtime
+	ctrlmetrics "sigs.k8s.io/controller-runtime/pkg/metrics"
+
+	// Import the OTel Prometheus Exporter
+	otelprom "go.opentelemetry.io/otel/exporters/prometheus"
+
+	"go.opentelemetry.io/otel/sdk/metric"
+)
+
+func main() {
+	// Use the WithRegisterer option to specify the Prometheus registry to use.
+	// It will default to the global default Prometheus Registry, which is not used by controller-runtime.
+	exporter, err := otelprom.New(otelprom.WithRegisterer(ctrlmetrics.Registry))
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  // Now configure some metrics using OTel
+  // Base on: https://github.com/open-telemetry/opentelemetry-go/blob/404f999fd0315a36be322f35c6b9b74746808028/example/prometheus/main.go
+  provider := metric.NewMeterProvider(metric.WithReader(exporter))
+  meter := provider.Meter("github.com/austince/blog")
+  	counter, err := meter.SyncFloat64().Counter("foo", instrument.WithDescription("a simple counter"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	counter.Add(ctx, 5)
+
+
+}
+```
+
+Now, all the metrics registered with the OTel libraries will be exposed alongside the controller-runtime metrics from the
+global registry :tada:
+
+You can use the way you're already using for exposing the Prometheus metrics in that registry
+(e.g., the controller-runtime's [`Manager`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.1/pkg/manager#Manager))
+or using the standard Prometheus HTTP library:
+
+```go
+package promdemo
+
+import (
+	"log"
+	"net/http"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	ctrlmetrics "sigs.k8s.io/controller-runtime/pkg/metrics"
+)
+
+func serveMetrics() {
+	log.Printf("serving metrics at localhost:2223/metrics")
+
+	handler := promhttp.HandlerFor(ctrlmetrics.Registry, promhttp.HandlerOpts{})
+	http.Handle("/metrics", handler)
+	err := http.ListenAndServe(":2223", nil)
+	if err != nil {
+		log.Printf("error serving http: %v", err)
+		return
+	}
+}
+```
+
+
+## Bonus: What I've learned OpenTelemetry is
+
+There's so much under the OTel umbrella. This is what I think it is:
+
+* A specification for:
+  * Data Formats (Traces, Metrics, Logs, Baggage)
+  * APIs
+  * SDKs
+* Libraries that implement the API + SDK specs in a variety of languages and, sometimes, auto-instrument code
+* Community-contributed extensions
+* Binaries to run in your system for managing observability data:
+  * A Collector that receives, processes, and exports data, running either:
+    * alongside your process in an "agent" mode for local sources
+    * as a standalone service for remote sources
+  * A Kubernetes Operator for managing the OTel ecosystem on top of Kubernetes
+
+They've got a great [glossary](https://opentelemetry.io/docs/concepts/glossary/) as well.
+
+<Discussion title="2022-11-28-using-otel-with-prometheus-global-registry"/>
