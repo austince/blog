@@ -78,9 +78,9 @@ import (
 )
 
 func main() {
-	// Use the WithRegisterer option to specify the Prometheus registry to use.
-	// It will default to the global default Prometheus Registry, which is not used by controller-runtime.
-	exporter, err := otelprom.New(otelprom.WithRegisterer(ctrlmetrics.Registry))
+  // Use the WithRegisterer option to specify the Prometheus registry to use.
+  // It will default to the global default Prometheus Registry, which is not used by controller-runtime.
+  exporter, err := otelprom.New(otelprom.WithRegisterer(ctrlmetrics.Registry))
   if err != nil {
     log.Fatal(err)
   }
@@ -89,13 +89,13 @@ func main() {
   // Base on: https://github.com/open-telemetry/opentelemetry-go/blob/404f999fd0315a36be322f35c6b9b74746808028/example/prometheus/main.go
   provider := metric.NewMeterProvider(metric.WithReader(exporter))
   meter := provider.Meter("github.com/austince/blog")
-  	counter, err := meter.SyncFloat64().Counter("foo", instrument.WithDescription("a simple counter"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	// Aaaand record some values.
-	ctx := context.Background()
-	counter.Add(ctx, 5)
+  counter, err := meter.SyncFloat64().Counter("foo", instrument.WithDescription("a simple counter"))
+  if err != nil {
+    log.Fatal(err)
+  }
+  // Aaaand record some values.
+  ctx := context.Background()
+  counter.Add(ctx, 5)
 }
 ```
 
