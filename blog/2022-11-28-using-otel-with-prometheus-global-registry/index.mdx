@@ -124,8 +124,7 @@ func serveMetrics() {
 	http.Handle("/metrics", handler)
 	err := http.ListenAndServe(":2223", nil)
 	if err != nil {
-		log.Printf("error serving http: %v", err)
-		return
+		log.Fatalf("error serving http: %v", err)
 	}
 }
 ```
