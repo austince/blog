@@ -64,7 +64,7 @@ they are just as inconvenient as the above SQL, but sadly more familiar.
 ```shell
 api create table Puppies # ...
 api insert-into \
-  --table=$(api get table-id --name=Puppies | jq -r '.[0].id') \
+  --table=$(api get tables --name=Puppies | jq -r '.[0].id') \
   --data='{"name": "Moody", "breed": "Chihuahua Mix"}'
 ```
 
